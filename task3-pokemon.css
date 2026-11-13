@@ -1,0 +1,89 @@
+/* Task 3 – Pokémon blog · inject into <head> */
+
+/* ---------- No flash ----------
+   "Filter by Tags" and "Filter by Capability" are hidden from the first paint.
+   In the marked list, everything inside a card except our .gx-poke is hidden, which also
+   covers cards React adds before our code has run. */
+select[name="post_tag"],
+select[name="capability"],
+[data-gx-list] > * > :not(.gx-poke),
+[data-gx-list] > [data-gx-hidden] { display: none !important; }
+
+/* ---------- The list as a responsive grid ---------- */
+[data-gx-list] {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)) !important;
+  gap: 24px !important;
+}
+[data-gx-list] > * {                                       /* the site's card box: our Pokémon card replaces it */
+  grid-column: auto !important;                            /* undo the site's col-span classes */
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Flip card ----------
+   Two faces stacked on top of each other. The back starts turned away (rotateY 180deg);
+   flipping turns the wrapper 180deg. backface-visibility hides whichever face is turned away. */
+.gx-poke {
+  --color: #9aa3b2;
+  height: 100%;
+  min-height: 360px;
+  perspective: 1200px;
+  color: #14171f;
+  font-size: 15px;
+  cursor: pointer;
+  animation: gx-fade-in .35s ease;
+}
+.gx-poke:focus-visible { outline: 3px solid #2850c4; outline-offset: 4px; border-radius: 18px; }
+.gx-inner { position: relative; height: 100%; min-height: inherit; transform-style: preserve-3d; transition: transform .6s ease; }
+.gx-poke.is-flipped .gx-inner { transform: rotateY(180deg); }
+.gx-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .08), 0 12px 28px rgba(0, 0, 0, .08);
+  backface-visibility: hidden;
+}
+.gx-front { background: linear-gradient(170deg, color-mix(in srgb, var(--color) 28%, #fff) 55%, #fff 55%); }
+.gx-back { align-items: stretch; border-top: 6px solid var(--color); transform: rotateY(180deg); }
+
+/* Front */
+.gx-number { align-self: flex-end; color: #6b7280; font-size: 13px; font-weight: 700; }
+.gx-front img { width: 70%; max-width: 180px; aspect-ratio: 1; object-fit: contain; }
+.gx-poke h3 { margin: 0; font-size: 20px; text-align: center; }
+.gx-poke h3 small { color: #6b7280; font-size: 13px; }
+.gx-types { display: flex; gap: 6px; }
+.gx-types span { padding: 3px 12px; border-radius: 999px; background: var(--color); color: #fff; font-size: 12px; font-weight: 700; }
+.gx-front > small { margin-top: auto; color: #8a93a3; font-size: 12px; }
+
+/* Back */
+.gx-back dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+.gx-back dl div { padding: 8px 10px; border-radius: 10px; background: #f4f6fb; }
+.gx-back .gx-wide { grid-column: 1 / -1; }
+.gx-back dt { color: #6b7280; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.gx-back dd { margin: 0; font-weight: 600; text-transform: capitalize; }
+.gx-back ul { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.gx-back li { display: grid; grid-template-columns: 74px 30px 1fr; align-items: center; gap: 6px; font-size: 12px; text-transform: capitalize; }
+.gx-back li b { text-align: right; }
+.gx-back li i { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--color) var(--value), #e8ebf0 var(--value)); }
+
+/* Loading skeleton */
+.gx-skeleton { width: 55%; height: 20px; border-radius: 10px; background: #eceff4; animation: gx-pulse 1s ease-in-out infinite alternate; }
+.gx-skeleton--image { width: 60%; height: auto; aspect-ratio: 1; border-radius: 50%; }
+
+/* Empty message */
+#gx-empty { margin: 24px 0; padding: 20px; border: 2px dashed #d5dae3; border-radius: 12px; color: #4b5563; text-align: center; }
+#gx-empty[hidden] { display: none; }
+
+@keyframes gx-fade-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes gx-pulse { to { opacity: .5; } }
+@media (prefers-reduced-motion: reduce) { .gx-poke, .gx-skeleton { animation: none; } .gx-inner { transition: none; } }

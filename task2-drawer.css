@@ -1,0 +1,169 @@
+/* Task 2 – Footer drawer · inject into <head> */
+
+/* ---------- Overlay ---------- */
+#gx-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(15, 18, 28, .55);
+  opacity: 0;
+  visibility: hidden;                                        /* can't be clicked while hidden */
+  transition: opacity .35s, visibility .35s;
+}
+#gx-overlay.is-open { opacity: 1; visibility: visible; }
+
+/* ---------- Drawer (Flexbox column: tab on top, panel below) ----------
+   Closed, it is moved down by its own height minus the tab, so only the tab shows. */
+#gx-drawer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #14171f;
+  font-size: 15px;
+  line-height: 1.4;
+  transform: translateY(calc(100% - 44px));
+  transition: transform .45s cubic-bezier(.2, .8, .2, 1);
+  pointer-events: none;                                      /* only the tab and panel catch clicks */
+}
+#gx-drawer.is-open { transform: none; }
+#gx-drawer * { box-sizing: border-box; }
+
+.gx-tab {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 6px;
+  border-radius: 10px 10px 0 0;
+  background: #d9a84a;
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, .15);
+  pointer-events: auto;
+}
+.gx-tab button {
+  height: 36px;
+  min-width: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 18px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gx-tab button:hover:not(:disabled) { background: rgba(0, 0, 0, .1); }
+.gx-tab button:disabled { opacity: .35; cursor: default; }
+.gx-tab button:focus-visible { outline: 3px solid #2850c4; }
+
+/* Page count and arrows: only while open */
+.gx-pager { display: none; align-items: center; }
+#gx-drawer.is-open .gx-pager { display: flex; }
+.gx-pager button { font-size: 22px; }
+.gx-count { min-width: 3em; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* Chevron: a square showing two borders. 45° points up, 225° (+180°) points down. */
+.gx-chevron {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-top: 2.5px solid;
+  border-left: 2.5px solid;
+  transform: rotate(45deg);
+  transition: transform .4s, margin .4s;
+}
+#gx-drawer.is-open .gx-chevron { margin-top: -4px; transform: rotate(225deg); }
+
+/* ---------- Slider: a scrolling row that snaps to slides (touch swipe for free) ---------- */
+.gx-panel { width: 100%; padding: 20px 0 24px; background: #f1f2f4; box-shadow: 0 -6px 24px rgba(0, 0, 0, .18); pointer-events: auto; }
+.gx-track {
+  --per-page: 4;                                             /* 2 on tablet, 1 on mobile (below) */
+  display: flex;
+  gap: 16px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 4px 24px 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 24px;
+  scrollbar-width: none;
+  cursor: grab;
+}
+.gx-track.is-dragging { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+
+.gx-slide {
+  flex: 0 0 calc((100% - (var(--per-page) - 1) * 16px) / var(--per-page));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
+  scroll-snap-align: start;
+}
+.gx-slide img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #dfe2e8; pointer-events: none; }
+.gx-slide-body { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px 16px 16px; }
+.gx-slide h3 { margin: 0; font-size: 17px; line-height: 1.3; }
+.gx-slide p { margin: 0; color: #4b5563; font-size: 14px; }
+.gx-slide a {
+  margin-top: auto;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #d9a84a;
+  color: #14171f;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.gx-slide a:hover { background: #c99532; }
+
+.gx-tag {
+  padding: 3px 10px;
+  border: 1px solid #d8dbe2;
+  border-radius: 999px;
+  background: #f6f7f9;
+  color: #374151;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: help;
+}
+.gx-tag::after { content: " ⓘ"; }
+
+/* ---------- Tooltip (Figure 5) ---------- */
+#gx-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: min(260px, calc(100vw - 16px));                 /* wraps on narrow screens */
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #c2255c;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .2);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.4;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .18s, transform .18s;
+}
+#gx-tooltip.is-visible { opacity: 1; transform: none; }
+#gx-tooltip::after {                                         /* the arrow, pointing at the tag */
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: var(--arrow);
+  border: 7px solid transparent;
+  border-top-color: #c2255c;
+  transform: translateX(-50%);
+}
+#gx-tooltip.is-below::after { top: auto; bottom: 100%; border-color: transparent transparent #c2255c; }
+
+/* ---------- Responsive: 4 slides on desktop, 2 on tablet, 1 on mobile ---------- */
+@media (max-width: 1023px) { .gx-track { --per-page: 2; } }
+@media (max-width: 599px)  { .gx-track { --per-page: 1; } }
+
+@media (prefers-reduced-motion: reduce) { #gx-drawer, #gx-overlay, #gx-tooltip, .gx-chevron { transition: none; } }
